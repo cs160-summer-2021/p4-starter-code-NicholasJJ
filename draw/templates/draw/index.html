@@ -19,14 +19,17 @@
     <canvas id="myCanvas" width="750px" height="750px"></canvas>
 </body>
 <script>
-
+    function uidToColor(id) {
+        return id * (360/10000)
+    }
     // setting up the canvas and one paper tool
     var canvas = document.getElementById('myCanvas');
     paper.setup(canvas);
     var tool = new paper.Tool();
     var path = new paper.Path();
     var uid = Date.now() % 10000;
-    path.strokeColor = "red";
+    path.strokeColor = "red"
+    path.strokeColor.hue = uidToColor(uid);
 
     //Set up a map of uids to paths
     const idtopath = new Map();
@@ -53,6 +56,7 @@
             var p = new paper.Path();
             
             p.strokeColor="red";
+            p.strokeColor.hue = uidToColor(received.uid);
             idtopath.set(received.uid,p);
         }
         idtopath.get(received.uid).add(new paper.Point(received.x,received.y));
