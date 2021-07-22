@@ -1,0 +1,149 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>P4 Drawing</title>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'draw/vendor/bootstrap/css/bootstrap.min.css' %}">
+    <script type="text/javascript" src="{% static 'draw/vendor/jquery/jquery-3.3.1.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'draw/vendor/paper/paper-full.min.js' %}"></script>
+
+    <style type="text/css">
+        .sizeButton{
+            text-align: center;
+            line-height: 6vh;
+        }
+    </style>
+
+</head>
+<body style="overflow: hidden;">
+    <div class = "container-fluid" >
+        <div class= "row" style="height: 5vh; font-size: 4vh;">
+            <div id="adjDisplay" class = "col-12" style="text-align: center;">
+                attribute
+            </div>
+        </div>
+        <div class="row" style="height: 81vh;">
+            <canvas id="myCanvas" width="750px" height="750px" style="width: 100%;"></canvas>
+        </div>
+        <div class="row" style="height: 7vh;">
+            <div class="col-1" style="visibility: hidden;"></div>
+            <div id="black" class="col-2 colorButton" style="background-color: black; border-width: 5px;" onclick="setColor('black')"></div>
+            <div id="white" class="col-2 colorButton" style="background-color: white; border-width: 5px;" onclick="setColor('white')"></div>
+            <div id="red" class="col-1 colorButton" style="background-color: red; border-width: 5px;" onclick="setColor('red')"></div>
+            <div id="orange" class="col-1 colorButton" style="background-color: orange; border-width: 5px;" onclick="setColor('orange')"></div>
+            <div id="yellow" class="col-1 colorButton" style="background-color: yellow; border-width: 5px;" onclick="setColor('yellow')"></div>
+            <div id="green" class="col-1 colorButton" style="background-color: green; border-width: 5px;" onclick="setColor('green')"></div>
+            <div id="blue" class="col-1 colorButton" style="background-color: blue; border-width: 5px;" onclick="setColor('blue')"></div>
+            <div id="purple" class="col-1 colorButton" style="background-color: purple; border-width: 5px;" onclick="setColor('purple')"></div>
+        </div>
+        <div class="row" style="height: 7vh;">
+            <div id="small" class="col-3 sizeButton" onclick="setSize(4, this.id)" style="border-width: 10px; font-size: 2vh;">~</div>
+            <div id="medium" class="col-3 sizeButton" onclick="setSize(8, this.id)" style="border-width: 10px; font-size: 3vh;">~</div>
+            <div id="large" class="col-3 sizeButton" onclick="setSize(16, this.id)" style="border-width: 10px; font-size: 5vh;">~</div>
+            <div id="viking" class="col-3 sizeButton" onclick="setSize(32, this.id)" style="border-width: 10px; font-size: 7vh;">~</div>
+        </div>
+    </div>
+    
+</body>
+<script>
+    function uidToColor(id) {
+        return id * (360/10000)
+    }
+    // setting up the canvas and one paper tool
+    var canvas = document.getElementById('myCanvas');
+    paper.setup(canvas);
+    var tool = new paper.Tool();
+    var uid = sessionStorage.getItem("uid");
+    if (uid == null) {
+        var uid = Date.now() % 10000;
+        sessionStorage.setItem("uid", uid);
+    }
+    var currPath = null;
+    var pid = null;
+    var color = "red";
+    var drawSize = 4;
+
+    //Set up a map of uids to paths
+    const idtopath = new Map();
+
+    // getting the URL (you may want to use for Exercise 3)
+    var url = window.location.search;
+    const params = new URLSearchParams(url);
+
+    var socket = new WebSocket(
+        'ws://' + window.location.host + '/ws/draw');
+
+    tool.onMouseDown = function(event){
+        currPath = new paper.Path();
+        currPath.strokeColor = color;
+        currPath.strokeWidth = drawSize;
+        currPath.strokeCap = 'round';
+        currPath.strokeJoin = 'round';
+        pid = Date.now() % 10000;
+    }
+
+    tool.onMouseDrag = function(event) {
+        currPath.add(event.point);
+        const packet = {
+            x : event.point.x,
+            y : event.point.y,
+            color : color,
+            size : drawSize,
+            uid : uid,
+            pid : pid,
+            group : params.get("group")
+        }
+        socket.send(JSON.stringify(packet));
+    }
+
+    socket.onmessage = function(receivedMessage) {
+        var received = JSON.parse(receivedMessage.data);
+        // console.log(params.get('size'));
+        if (received.uid == uid || received.group != params.get("group")){
+            return;
+        }
+        // console.log("Received: " + received.uid);
+        if (!idtopath.has(received.pid)) {
+            var p = new paper.Path();
+            
+            p.strokeColor=received.color;
+            p.strokeWidth=received.size;
+            p.strokeCap = 'round';
+            p.strokeJoin = 'round';
+            idtopath.set(received.pid,p);
+        }
+        idtopath.get(received.pid).add(new paper.Point(received.x,received.y));
+        // console.log(idtopath.get(received.uid))
+        // You will probably want to add some code here to draw more lines.
+    }
+
+    socket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    
+
+    function setColor(c){
+        $(".colorButton").css("border-style", "none");
+        $("#" + c).css("border-style", "inset");
+        color = c;
+    }
+
+    function setSize(s,o) {
+        console.log(o);
+        $(".sizeButton").css("border-style", "none");
+        $("#" + o).css("border-style", "inset");
+        drawSize = s
+    }
+
+    window.onload = function(){
+        document.getElementById("adjDisplay").innerHTML = "attribute: <b>" + params.get("adj") + "</b>";
+        setSize(4, "small");
+        setColor("black");
+    } 
+
+</script>
+</html>

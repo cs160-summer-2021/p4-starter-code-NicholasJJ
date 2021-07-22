@@ -1,0 +1,128 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>P4 group</title>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'draw/vendor/bootstrap/css/bootstrap.min.css' %}">
+    <script type="text/javascript" src="{% static 'draw/vendor/jquery/jquery-3.3.1.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'draw/vendor/paper/paper-full.min.js' %}"></script>
+
+    <style type="text/css">
+    </style>
+
+</head>
+<body>
+    <!-- You may change the dimensions of this canvas -->
+    <div class="container-fluid">
+        <div class = "row">
+            Draw something that has attribute [<span id="adj"> ??? </span>] with group [<span id="groupName"> ???</span>]
+        </div>
+        <div class="row">
+              Group Descriptors:
+        </div>
+        <div id="groupDescriptors" class="row">
+              
+        </div>
+        <div class = "row">
+            <div class="col-12">
+                <button class=btn btn-primary onclick="readyUp()">Get Drawing!</button>
+            </div>
+        </div>
+        <div id="progressBar" class = "row" style="visibility: hidden;">
+            <div class="col-6">
+                Ready:
+            </div>
+            <div id="progressNumbers" class="col-6">
+                0/4
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    var uid = sessionStorage.getItem("uid");
+    if (uid == null) {
+        var uid = Date.now() % 10000;
+        sessionStorage.setItem("uid", uid);
+    }
+
+    // getting the URL (you may want to use for Exercise 3)
+    var url = window.location.search;
+    const params = new URLSearchParams(url);
+
+    var socket = new WebSocket(
+        'ws://' + window.location.host + '/ws/info');
+
+
+    var myGroup = null;
+    var membersReadied = 0;
+    var groupSize = 0;
+    var clickedReady = false;
+    var leader = false;
+
+    socket.onmessage = function(receivedMessage) {
+        console.log(receivedMessage.data)
+        console.log(groupName);
+        var received = JSON.parse(receivedMessage.data);
+        if (received.group != null && received.uid == uid) {
+            document.getElementById("groupName").textContent = received.group;
+            document.getElementById("adj").textContent = received.adj;
+            var dList = []
+            dList = received.descriptors;
+            for (var i = 0; i < dList.length; i++) {
+                createDFBlock(dList[i]);
+            }
+            sessionStorage.setItem("group", received.group);
+            myGroup = received.group;
+            groupSize = dList.length;
+            document.getElementById("progressBar").setAttribute("style", "visibility: visible")
+            document.getElementById("progressNumbers").innerText = "0/" + groupSize;
+        }
+        if (received.groupName != null && received.uid != uid && received.groupName == myGroup) {
+            membersReadied = received.mr;
+            document.getElementById("progressNumbers").innerText = membersReadied + "/" + groupSize;
+            if (membersReadied >= groupSize) {
+                location.href = 'smallDraw?group=' + myGroup + "&adj=" + document.getElementById("adj").textContent + "&leader=" + leader;
+            }
+        }
+    }
+
+    socket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    function createDFBlock(text,me) {
+        var parent = document.getElementById("groupDescriptors");
+        var newDiv = document.createElement("div");
+        newDiv.setAttribute("class", "col-12");
+        newDiv.setAttribute("style", "font-size: 3vh");
+        newDiv.appendChild(document.createTextNode(text))
+        parent.appendChild(newDiv);
+    }
+
+    function readyUp() {
+        console.log(myGroup);
+        if (myGroup != null && !clickedReady) {
+            clickedReady = true;
+            if (membersReadied == 0) {
+                leader = true;
+            }
+            membersReadied += 1;
+            document.getElementById("progressNumbers").innerText = membersReadied + "/" + groupSize;
+            const packet = {
+                groupName : myGroup,
+                mr : membersReadied,
+                uid : uid
+            }
+            socket.send(JSON.stringify(packet))
+            if (membersReadied >= groupSize) {
+                location.href = 'smallDraw?group=' + myGroup + "&adj=" + document.getElementById("adj").textContent + "&leader=" + leader;
+            }
+        }
+    }
+
+
+</script>
+</html>

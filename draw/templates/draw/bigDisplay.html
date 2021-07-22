@@ -1,0 +1,70 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>P4 Big Display</title>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'draw/vendor/bootstrap/css/bootstrap.min.css' %}">
+    <script type="text/javascript" src="{% static 'draw/vendor/jquery/jquery-3.3.1.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'draw/vendor/paper/paper-full.min.js' %}"></script>
+
+    <style type="text/css">
+    </style>
+
+</head>
+<body>
+    <!-- You may change the dimensions of this canvas -->
+    <button class="btn btn-primary" onclick="sortGroups()">Sort Groups</button>
+</body>
+<script>
+    var uid = sessionStorage.getItem("uid");
+    if (uid == null) {
+        var uid = Date.now() % 10000;
+        sessionStorage.setItem("uid", uid);
+    }
+
+    const adj = ["big","small","slimy","green","flies","blue","eats","hands", "timely", "fast", "wheels", "snappy", "sad", "happy"]
+
+    // getting the URL (you may want to use for Exercise 3)
+    var url = window.location.search;
+    const params = new URLSearchParams(url);
+
+    const idToInfo = new Map();
+
+    var infoSocket = new WebSocket('ws://' + window.location.host + '/ws/info');
+
+    infoSocket.onmessage = function(receivedMessage) {
+        console.log(receivedMessage.data)
+        var received = JSON.parse(receivedMessage.data);
+        idToInfo.set(received.uid, [received.Name, received.DF]);
+        console.log(idToInfo);
+    }
+
+    function sortGroups(){
+        var groupSize = 2;
+        var i = 0;
+        const groupToDFs = new Map();
+        for (const [key, value] of idToInfo) {
+            var group = Math.floor(i/groupSize);
+            if (!groupToDFs.has(group)) {
+                groupToDFs.set(group,[value[1]]);
+            } else {
+                groupToDFs.get(group).push(value[1]);
+            }
+            value.push(group)
+            i++;
+        }
+        for (const [key, value] of idToInfo) {
+            var g = value[2];
+            infoSocket.send("{\"uid\" : " + key + 
+                            ", \"group\" : " + g +
+                            ", \"descriptors\" : " + JSON.stringify(groupToDFs.get(g)) +
+                            ", \"adj\" : \" " + adj[Math.floor(Math.random()*adj.length)] + " \"" +
+                            "}" );
+        }
+    }
+
+</script>
+</html>
