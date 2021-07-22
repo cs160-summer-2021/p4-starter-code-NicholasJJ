@@ -28,12 +28,104 @@
             border-left-style: solid;
             border-right-style: solid;
         }
+        .base-timer__circle {
+            fill: none;
+            stroke: none;
+        }
+
+        /* The SVG path that displays the timer's progress */
+        .base-timer__path-elapsed {
+            stroke-width: .8vw;
+            stroke: grey;
+        }
+        .base-timer__label {
+            position: relative;
+            
+            /* Size should match the parent container */
+            width: 30vw;
+            height: 30vw;
+            
+            /* Keep the label aligned to the top */
+            top: -31vw;
+            
+            /* Create a flexible box that centers content vertically and horizontally */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            /* Sort of an arbitrary number; adjust to your liking */
+            font-size: 48px;
+        }
+        .base-timer__path-remaining {
+            /* Just as thick as the original ring */
+            stroke-width: .8vw;
+
+            /* Rounds the line endings to create a seamless circle */
+            stroke-linecap: round;
+
+            /* Makes sure the animation starts at the top of the circle */
+            transform: rotate(90deg);
+            transform-origin: center;
+
+            /* One second aligns with the speed of the countdown timer */
+            transition: 1s linear all;
+
+            /* Allows the ring to change color when the color value updates */
+            stroke: currentColor;
+        }
+
+        .base-timer__svg {
+            /* Flips the svg and makes the animation to move left-to-right */
+            transform: scaleX(-1);
+        }
     </style>
 
 </head>
 <body>
     <!-- You may change the dimensions of this canvas -->
-    <div id="grid" class="container-fluid"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div id="gameInfo" class="col-4" style="height: 100vh; padding-top: 3vh; visibility: hidden;">
+                <div style="margin: auto; width: 30vw; height: 30vw;">
+                    <!-- timer modified from w3school -->
+                    <div class="baseTimer">
+                        <svg class="base-timer__svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <g class="base-timer__circle">
+                                <circle class="base-timer__path-elapsed" cx="50" cy="50" r="45" />
+                                <path
+                                    id="base-timer-path-remaining"
+                                    stroke-dasharray="283"
+                                    style="color: turquoise"
+                                    class="base-timer__path-remaining"
+                                    d="
+                                    M 50, 50
+                                    m -45, 0
+                                    a 45,45 0 1,0 90,0
+                                    a 45,45 0 1,0 -90,0
+                                    "
+                                ></path>
+                            </g>
+                        </svg>
+                        <span id="base-timer-label" class="base-timer__label">
+                            time
+                        </span>
+                    </div>
+                </div>
+                <div style="width: 100%; text-align: center; font-size: 4vh; font-weight: bold;">How To Play</div>
+                <div style="width: 100%; text-align: justify;">
+                    1: Find your group and click the ready button on your phone
+                    <br><br>
+                    2: Each team member has a different attribute listed on their phone, decide on something to draw that has all your attributes
+                    <br><br>
+                    3: Draw! When time is up, pictures will be collected automatically
+                </div>
+            </div>
+            <div class="col-8">
+                <div id="grid" class="container-fluid"></div>
+            </div>
+        </div>
+    </div>
+    
     <button class="btn btn-primary" onclick="sortGroups()">Sort Groups</button>
     <button class="btn btn-primary" onclick="getPictures()">Get Pictures</button>
     <div class="container-fluid">
@@ -80,6 +172,19 @@
         
         var i = 0;
         const groupToDFs = new Map();
+        //Scramble groups
+        //TODO: for testing purposes only! comment this out so that humans don't get paired with bots
+        const tempArr = [];
+        for (const [key, value] of idToInfo) {
+            tempArr.push([Math.random(), key, value]);
+        }
+        tempArr.sort();
+        idToInfo.clear();
+        for (var counter = 0; counter < tempArr.length; counter++) {
+            idToInfo.set(tempArr[counter][1],tempArr[counter][2]);
+        }
+        //End of group scramble
+        //group assignment
         for (const [key, value] of idToInfo) {
             var group = Math.floor(i/groupSize);
             if (!groupToDFs.has(group)) {
@@ -90,6 +195,7 @@
             value.push(group)
             i++;
         }
+        
         var groupCount = Math.ceil(idToInfo.size / groupSize)
         const nameToGroup = [];
         const groupToNames = [];
@@ -115,15 +221,18 @@
         console.log(groupToNames);
         //Code for display goes here
         // sort by name
-        makeRow("Name","Group", "nameGroupRowHeader");
-        for (var j = 0; j < nameToGroup.length; j++) {
-            makeRow(nameToGroup[j][0],nameToGroup[j][1], "nameGroupRow");
-        }
+        // makeRow("Name","Group", "nameGroupRowHeader");
+        // for (var j = 0; j < nameToGroup.length; j++) {
+        //     makeRow(nameToGroup[j][0],nameToGroup[j][1], "nameGroupRow");
+        // }
         // sort by group
         makeRow("Group","Members", "nameGroupRowHeader");
         for (var j = 0; j < groupToNames.length; j++) {
             makeGroup(j,groupToNames[j]);
         }
+        var fontSize = Math.min(5, 60/nameToGroup.length)
+        document.getElementById("grid").setAttribute("style", "font-size: " + fontSize + "vh")
+        startCountDown();
     }
 
     function makeRow(col1,col2,cssClass) {
@@ -198,6 +307,55 @@
             newDiv.appendChild(adjs);
             parent.appendChild(newDiv);
         }
+    }
+
+    const timeLimit = 300;
+    var timeLeft = timeLimit;
+    var countingDown = false;
+    function startCountDown() {
+        console.log("hi");
+        document.getElementById("gameInfo").setAttribute("style", "height: 100vh; padding-top: 3vh; visibility: visible;")
+        countingDown = true;
+        var timeLeft = timeLimit;
+    }
+    function formatTime(time) {
+        if (time<0) {
+            return "Time's Up!"
+        }
+        var m = Math.floor(time/60);
+        var s = time%60;
+        if (s<10){
+            s="0"+s;
+        }
+        return m + ":" + s
+    }
+    function timeFraction() {
+        var ret = timeLeft/timeLimit;
+        return ret - (1/timeLimit)*(1-ret);
+    }
+    function setCircleDashArray() {
+        var temp = (timeFraction() * 283).toFixed(0);
+        document.getElementById("base-timer-path-remaining").setAttribute("stroke-dasharray", temp + " 283");
+    }
+    var x = setInterval(function(){
+        if (!countingDown) {
+            return;
+        }
+        console.log("hi")
+        timeLeft -= 1;
+        var timerGraphic = document.getElementById("base-timer-path-remaining");
+        if (timeLeft < timeLimit/4) {
+            timerGraphic.setAttribute("style", "color: red");
+        } else if (timeLeft < timeLimit/2) {
+            timerGraphic.setAttribute("style", "color: orange");
+        }
+        
+        document.getElementById("base-timer-label").innerText = formatTime(timeLeft);
+        setCircleDashArray();
+    }, 1000);
+    
+    window.onload = function() {
+        document.getElementById("base-timer-label").innerText = formatTime(timeLeft);
     }
 
 </script>
