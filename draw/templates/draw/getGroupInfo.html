@@ -16,22 +16,23 @@
 </head>
 <body>
     <!-- You may change the dimensions of this canvas -->
-    <div class="container-fluid">
-        <div class = "row">
-            Draw something that has attribute [<span id="adj"> ??? </span>] with group [<span id="groupName"> ???</span>]
-        </div>
+    <div class="container-fluid" style="font-size: 3vh; margin: 1vh; width: 95%">
+        <div class= "row" style="text-align: center;"> <div class="col-12">Draw something that has attribute:</div></div>
+        <div class= "row" style="text-align: center; font-weight:bold; font-size: 5vh;"> <div id="adj" class="col-12">???</div></div>
+        <div class= "row" style="text-align: center;"><div class="col-12">With Group:</div></div>
+        <div class= "row" style="text-align: center; font-weight:bold; font-size: 5vh;"><div id="groupName" class="col-12">???</div></div>
         <div class="row">
-              Group Descriptors:
+              Some identifying features about you and your teammates:
         </div>
         <div id="groupDescriptors" class="row">
               
         </div>
         <div class = "row">
             <div class="col-12">
-                <button class=btn btn-primary onclick="readyUp()">Get Drawing!</button>
+                <button id="readyButton" class=btn btn-primary onclick="readyUp()" style="width: 100%; font-size: 8vh; color: grey;">Get Drawing!</button>
             </div>
         </div>
-        <div id="progressBar" class = "row" style="visibility: hidden;">
+        <div id="progressBar" class = "row" style="visibility: hidden; font-size: 5vh;">
             <div class="col-6">
                 Ready:
             </div>
@@ -61,6 +62,7 @@
     var groupSize = 0;
     var clickedReady = false;
     var leader = false;
+    var adjs = [];
 
     socket.onmessage = function(receivedMessage) {
         console.log(receivedMessage.data)
@@ -79,12 +81,14 @@
             groupSize = dList.length;
             document.getElementById("progressBar").setAttribute("style", "visibility: visible")
             document.getElementById("progressNumbers").innerText = "0/" + groupSize;
+            document.getElementById("readyButton").setAttribute("style", "width: 100%; font-size: 8vh; color: white; background-color: #0077ff")
         }
         if (received.groupName != null && received.uid != uid && received.groupName == myGroup) {
             membersReadied = received.mr;
+            adjs.push(received.adj);
             document.getElementById("progressNumbers").innerText = membersReadied + "/" + groupSize;
             if (membersReadied >= groupSize) {
-                location.href = 'smallDraw?group=' + myGroup + "&adj=" + document.getElementById("adj").textContent + "&leader=" + leader;
+                moveOn();
             }
         }
     }
@@ -114,13 +118,18 @@
             const packet = {
                 groupName : myGroup,
                 mr : membersReadied,
-                uid : uid
+                uid : uid,
+                adj : document.getElementById("adj").textContent
             }
+            adjs.push(document.getElementById("adj").textContent);
             socket.send(JSON.stringify(packet))
             if (membersReadied >= groupSize) {
-                location.href = 'smallDraw?group=' + myGroup + "&adj=" + document.getElementById("adj").textContent + "&leader=" + leader;
+                moveOn();
             }
         }
+    }
+    function moveOn(){
+        location.href = 'smallDraw?group=' + myGroup + "&adj=" + document.getElementById("adj").textContent + "&leader=" + leader + "&adjs=" + JSON.stringify(adjs);
     }
 
 

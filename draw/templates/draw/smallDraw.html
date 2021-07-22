@@ -102,6 +102,18 @@
     socket.onmessage = function(receivedMessage) {
         var received = JSON.parse(receivedMessage.data);
         // console.log(params.get('size'));
+        if (received.timeUp != null) {
+            if (params.get("leader") == "true") {
+                var ex = paper.project.exportJSON();
+                const packet = {
+                    returnedGroup : params.get("group"),
+                    pic : ex,
+                    prompt : params.get("adjs")
+                }
+                socket.send(JSON.stringify(packet));
+            }
+            return;
+        }
         if (received.uid == uid || received.group != params.get("group")){
             return;
         }

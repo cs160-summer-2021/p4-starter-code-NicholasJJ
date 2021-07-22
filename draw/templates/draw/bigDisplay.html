@@ -16,7 +16,14 @@
 </head>
 <body>
     <!-- You may change the dimensions of this canvas -->
+    <div id="grid" class="container-fluid"></div>
     <button class="btn btn-primary" onclick="sortGroups()">Sort Groups</button>
+    <button class="btn btn-primary" onclick="getPictures()">Get Pictures</button>
+    <div class="container-fluid">
+        <div id = "pics" class="row">
+
+        </div>
+    </div>
 </body>
 <script>
     var uid = sessionStorage.getItem("uid");
@@ -33,7 +40,18 @@
 
     const idToInfo = new Map();
 
+    //prepopulate
+    idToInfo.set(3, ["Charlie", "Cool"]);
+    idToInfo.set(4, ["Dave", "Dashing"]);
+    idToInfo.set(5, ["Elmo", "Evil"]);
+    idToInfo.set(1, ["Alice", "Awesome"]);
+    idToInfo.set(2, ["Bob", "Beautiful"]);
+    idToInfo.set(6, ["Frank", "Foolish"]);
+    idToInfo.set(7, ["Gus", "Good"]);
+    idToInfo.set(8, ["Heather", "Handsome"]);
+
     var infoSocket = new WebSocket('ws://' + window.location.host + '/ws/info');
+    var drawSocket = new WebSocket('ws://' + window.location.host + '/ws/draw');
 
     infoSocket.onmessage = function(receivedMessage) {
         console.log(receivedMessage.data)
@@ -41,7 +59,7 @@
         idToInfo.set(received.uid, [received.Name, received.DF]);
         console.log(idToInfo);
     }
-
+    //value = [name,df,group]
     function sortGroups(){
         var groupSize = 2;
         var i = 0;
@@ -56,13 +74,68 @@
             value.push(group)
             i++;
         }
+        var groupCount = Math.ceil(idToInfo.size / groupSize)
+        const nameToGroup = [];
+        nameToGroup.sort();
+        console.log(nameToGroup);
+        const groupToNames = [];
+        groupToNames.length = groupCount;
         for (const [key, value] of idToInfo) {
             var g = value[2];
+            nameToGroup.push([value[0],value[2]]);
+            if (groupToNames[value[2]] == null) {
+                groupToNames[value[2]] = [];
+            }
+            groupToNames[value[2]].push(value[0]);
             infoSocket.send("{\"uid\" : " + key + 
                             ", \"group\" : " + g +
                             ", \"descriptors\" : " + JSON.stringify(groupToDFs.get(g)) +
                             ", \"adj\" : \" " + adj[Math.floor(Math.random()*adj.length)] + " \"" +
                             "}" );
+        }
+        nameToGroup.sort();
+        for (var j = 0; j < groupToNames.length; j++) {
+            groupToNames[j].sort();
+        }
+        console.log(nameToGroup);
+        console.log(groupToNames);
+        //Code for display goes here
+        var parent = document.getElementById("grid");
+    }
+
+    function getPictures(){
+        const packet = {
+            timeUp : true
+        }
+        drawSocket.send(JSON.stringify(packet));
+    }
+
+    drawSocket.onmessage = function(receivedMessage) {
+        console.log(receivedMessage.data)
+        var received = JSON.parse(receivedMessage.data);
+        if (received.returnedGroup != null) {
+            var parent = document.getElementById("pics");
+            var newDiv = document.createElement("div");
+            newDiv.setAttribute("class", "col-4");
+            //Image setup
+			var img = document.createElement("canvas");
+			img.setAttribute("width", "1000px");
+			img.setAttribute("height", "1000px");
+            
+			var s = new paper.PaperScope();
+			s.setup(img);
+			s.activate();
+			with(paper){
+				project.activeLayer.removeChildren();
+				project.importJSON(received.pic);
+			}
+            img.setAttribute("style", "height: 80%; width: 100%; border-style: solid")
+			newDiv.appendChild(img);
+            var adjs = document.createElement("div");
+            adjs.setAttribute("style", "width: 100%; font-size: 2vh; border-style:solid; text-align: center");
+            adjs.appendChild(document.createTextNode(JSON.parse(received.prompt)))
+            newDiv.appendChild(adjs);
+            parent.appendChild(newDiv);
         }
     }
 
