@@ -11,6 +11,23 @@
     <script type="text/javascript" src="{% static 'draw/vendor/paper/paper-full.min.js' %}"></script>
 
     <style type="text/css">
+        #grid{
+            font-size: 5vh;
+        }
+        .nameGroupRow{
+            border-bottom-style: solid;
+            border-left-style: solid;
+            border-right-style: solid;
+        }
+        .nameGroupRowHeader{
+            border-style: solid;
+            background-color: lightgray;
+        }
+        .groupRow{
+            border-bottom-style: solid;
+            border-left-style: solid;
+            border-right-style: solid;
+        }
     </style>
 
 </head>
@@ -31,7 +48,7 @@
         var uid = Date.now() % 10000;
         sessionStorage.setItem("uid", uid);
     }
-
+    const teamNames = ["lil\'Jquery", "Marble Phone Machine", "Websockpuppets", "W3school Acolytes", "Synchronous&colocated"]
     const adj = ["big","small","slimy","green","flies","blue","eats","hands", "timely", "fast", "wheels", "snappy", "sad", "happy"]
 
     // getting the URL (you may want to use for Exercise 3)
@@ -54,14 +71,13 @@
     var drawSocket = new WebSocket('ws://' + window.location.host + '/ws/draw');
 
     infoSocket.onmessage = function(receivedMessage) {
-        console.log(receivedMessage.data)
         var received = JSON.parse(receivedMessage.data);
         idToInfo.set(received.uid, [received.Name, received.DF]);
-        console.log(idToInfo);
     }
+    var groupSize = 2;
     //value = [name,df,group]
     function sortGroups(){
-        var groupSize = 2;
+        
         var i = 0;
         const groupToDFs = new Map();
         for (const [key, value] of idToInfo) {
@@ -76,13 +92,11 @@
         }
         var groupCount = Math.ceil(idToInfo.size / groupSize)
         const nameToGroup = [];
-        nameToGroup.sort();
-        console.log(nameToGroup);
         const groupToNames = [];
         groupToNames.length = groupCount;
         for (const [key, value] of idToInfo) {
-            var g = value[2];
-            nameToGroup.push([value[0],value[2]]);
+            var g = teamNames[value[2]];
+            nameToGroup.push([value[0],g]);
             if (groupToNames[value[2]] == null) {
                 groupToNames[value[2]] = [];
             }
@@ -100,7 +114,54 @@
         console.log(nameToGroup);
         console.log(groupToNames);
         //Code for display goes here
+        // sort by name
+        makeRow("Name","Group", "nameGroupRowHeader");
+        for (var j = 0; j < nameToGroup.length; j++) {
+            makeRow(nameToGroup[j][0],nameToGroup[j][1], "nameGroupRow");
+        }
+        // sort by group
+        makeRow("Group","Members", "nameGroupRowHeader");
+        for (var j = 0; j < groupToNames.length; j++) {
+            makeGroup(j,groupToNames[j]);
+        }
+    }
+
+    function makeRow(col1,col2,cssClass) {
         var parent = document.getElementById("grid");
+        var newRow = document.createElement("div");
+            newRow.setAttribute("class", "row " + cssClass);
+            var nameCol = document.createElement("div");
+                nameCol.setAttribute("class", "col-6")
+                nameCol.setAttribute("style", "border-right: solid grey")
+                nameCol.appendChild(document.createTextNode(col1));
+                newRow.appendChild(nameCol);
+            var groupCol = document.createElement("div");
+                groupCol.setAttribute("class", "col-6")
+                groupCol.appendChild(document.createTextNode(col2));
+                newRow.appendChild(groupCol);
+            parent.appendChild(newRow);
+    }
+
+    function makeGroup(name,members) {
+        console.log(members)
+        name = teamNames[name];
+        var parent = document.getElementById("grid");
+        var newGroup = document.createElement("div");
+            newGroup.setAttribute("class", "row groupRow");
+            var nameCol = document.createElement("div");
+                nameCol.setAttribute("class", "col-6")
+                nameCol.setAttribute("style", "border-right: solid grey; display: flex; align-items: center")
+                nameCol.appendChild(document.createTextNode(name));
+                newGroup.appendChild(nameCol);
+            var groupCol = document.createElement("div");
+                groupCol.setAttribute("class", "col-6")
+                var inner = ""
+                for (var k = 0; k < groupSize; k++){
+                    inner += members[k] + "<br> ";
+                }
+                groupCol.innerHTML = inner
+                newGroup.appendChild(groupCol); 
+            parent.appendChild(newGroup);
     }
 
     function getPictures(){
@@ -111,7 +172,7 @@
     }
 
     drawSocket.onmessage = function(receivedMessage) {
-        console.log(receivedMessage.data)
+        // console.log(receivedMessage.data)
         var received = JSON.parse(receivedMessage.data);
         if (received.returnedGroup != null) {
             var parent = document.getElementById("pics");
