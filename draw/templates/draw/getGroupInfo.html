@@ -15,6 +15,7 @@
             position: absolute;
             top: 87vh;
             left: 0vw;
+            border-top: solid 10px;
         }
     </style>
 
@@ -22,8 +23,8 @@
 <body>
     <!-- You may change the dimensions of this canvas -->
     <div class="container-fluid">
-        <div class="row" style="border-style: solid; border-width: 1vw; border-radius: 10px;">
-            <div class="col-12" style="text-align: center; font-size: 12vw; font-weight: bolder; font-style: italic;">
+        <div class="row" style="border-style: solid; border-width: 1vw; border-radius: 10px; background-color: #EF3E36;">
+            <div class="col-12" style="text-align: center; font-size: 12vw; font-weight: bolder; font-style: italic; color: #FFFD82">
                 TASK - O - RAMA
             </div>
         </div>
@@ -45,6 +46,7 @@
                 </div>
             </div>
         </div>
+        <div class= "row" style="text-align: center;"> <div class="col-12">Task #1</div></div>
         <div class= "row" style="text-align: center;"> <div class="col-12">Draw something that has attribute:</div></div>
         <div class= "row" style="text-align: center; font-weight:bold; font-size: 5vh;"> <div id="adj" class="col-12">???</div></div>
         
@@ -98,7 +100,7 @@
             groupSize = dList.length;
             document.getElementById("progressBar").setAttribute("style", "visibility: visible")
             document.getElementById("progressNumbers").innerText = "0/" + groupSize;
-            document.getElementById("readyButton").setAttribute("style", "width: 100%; font-size: 8vh; color: white; background-color: #0077ff")
+            document.getElementById("readyButton").setAttribute("style", "width: 100%; font-size: 8vh; color: white; background-color: #20A4F3")
         }
         if (received.groupName != null && received.uid != uid && received.groupName == myGroup) {
             membersReadied = received.mr;
@@ -113,24 +115,31 @@
     socket.onclose = function(e) {
         console.error('Chat socket closed unexpectedly');
     };
-
+    var listCount = 1;
     function createDFBlock(text,me) {
         var parent = document.getElementById("groupDescriptors");
+        var pad = document.createElement("div");
+            pad.setAttribute("class", "col-1");
+            parent.appendChild(pad);
         var newDiv = document.createElement("div");
-        newDiv.setAttribute("class", "col-12");
-        newDiv.setAttribute("style", "font-size: 5vh");
+        newDiv.setAttribute("class", "col-11");
+        newDiv.setAttribute("style", "font-size: 5vh, padding-left: 10vw");
         if (me) {
-            newDiv.appendChild(document.createTextNode(text + "<-- Me!"))
+            newDiv.appendChild(document.createTextNode(listCount + ". " + text + " <-- You!"))
         } else {
-            newDiv.appendChild(document.createTextNode(text))
+            newDiv.appendChild(document.createTextNode(listCount + ". " + text))
         }
         
         parent.appendChild(newDiv);
+        listCount++;
     }
 
     function readyUp() {
         console.log(myGroup);
         if (myGroup != null && !clickedReady) {
+            var readyBtn = document.getElementById("readyButton");
+            readyBtn.setAttribute("style", "width: 100%; font-size: 8vh; color: grey;");
+            readyBtn.innerText = "Waiting..."
             clickedReady = true;
             if (membersReadied == 0) {
                 leader = true;
@@ -153,6 +162,10 @@
     function moveOn(){
         location.href = 'smallDraw?group=' + myGroup + "&adj=" + document.getElementById("adj").textContent + "&leader=" + leader + "&adjs=" + JSON.stringify(adjs);
     }
+
+    // window.onload = function(){
+    //     createDFBlock("test", false);
+    // }
 
 
 </script>

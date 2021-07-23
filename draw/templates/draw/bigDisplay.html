@@ -21,7 +21,7 @@
         }
         .nameGroupRowHeader{
             border-style: solid;
-            background-color: lightgray;
+            background-color: #9CAEA9;
         }
         .groupRow{
             border-bottom-style: solid;
@@ -36,7 +36,7 @@
         /* The SVG path that displays the timer's progress */
         .base-timer__path-elapsed {
             stroke-width: .8vw;
-            stroke: grey;
+            stroke: #9CAEA9;
         }
         .base-timer__label {
             position: relative;
@@ -78,12 +78,44 @@
             /* Flips the svg and makes the animation to move left-to-right */
             transform: scaleX(-1);
         }
+        #titleCard{
+            position: relative;
+            top: 40vh;
+            margin: auto;
+            width: 40vw;
+            font-size: 4vw;
+            font-weight: bold;
+            font-style: italic;
+            text-align: center;
+            background-color: #EF3E36;
+            color: #FFFD82;
+            border: solid black 5px;
+            transform: rotate(30deg) scale(2);
+        }
+        #startBtn{
+            position: relative;
+            top: 50vh;
+            margin: auto;
+            width: 20vw;
+            font-size: 2vw;
+            text-align: center;
+            background-color: #20A4F3;
+            color: white;
+            border: solid black 5px;
+        }
+        #mainContainer{
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
     </style>
 
 </head>
-<body>
-    <!-- You may change the dimensions of this canvas -->
-    <div class="container-fluid">
+<body style="background-color: #FDEDEC;">
+    
+    <!-- <button class="btn btn-primary" onclick="sortGroups()">Sort Groups</button>
+    <button class="btn btn-primary" onclick="getPictures(false)">Get Pictures</button> -->
+    <div id ="mainContainer" class="container-fluid">
         <div class="row">
             <div id="gameInfo" class="col-4" style="height: 100vh; padding-top: 3vh; visibility: hidden;">
                 <div style="margin: auto; width: 30vw; height: 30vw;">
@@ -95,7 +127,7 @@
                                 <path
                                     id="base-timer-path-remaining"
                                     stroke-dasharray="283"
-                                    style="color: turquoise"
+                                    style="color: #20A4F3"
                                     class="base-timer__path-remaining"
                                     d="
                                     M 50, 50
@@ -119,6 +151,7 @@
                     <br><br>
                     3: Draw! When time is up, pictures will be collected automatically
                 </div>
+                <button class="btn btn-primary" onclick="getPictures(false)">Get Pictures</button>
             </div>
             <div class="col-8">
                 <div id="grid" class="container-fluid">
@@ -129,12 +162,9 @@
             </div>
         </div>
     </div>
+    <div id="titleCard">TASK - O - RAMA</div>
+    <div id="startBtn" onclick="console.log('hey'); sortGroups(); removeTitle()">Sort Groups</div>
     
-    <button class="btn btn-primary" onclick="sortGroups()">Sort Groups</button>
-    <button class="btn btn-primary" onclick="rushTime()">Get Pictures</button>
-    <div class="container-fluid">
-        
-    </div>
 </body>
 <script>
     var uid = sessionStorage.getItem("uid");
@@ -236,6 +266,7 @@
         for (var j = 0; j < groupToNames.length; j++) {
             makeGroup(j,groupToNames[j]);
         }
+
         var fontSize = Math.min(5, 60/nameToGroup.length)
         document.getElementById("grid").setAttribute("style", "font-size: " + fontSize + "vh")
         startCountDown();
@@ -247,7 +278,7 @@
             newRow.setAttribute("class", "row " + cssClass);
             var nameCol = document.createElement("div");
                 nameCol.setAttribute("class", "col-6")
-                nameCol.setAttribute("style", "border-right: solid grey")
+                nameCol.setAttribute("style", "border-right: solid #9CAEA9")
                 nameCol.appendChild(document.createTextNode(col1));
                 newRow.appendChild(nameCol);
             var groupCol = document.createElement("div");
@@ -265,13 +296,13 @@
             newGroup.setAttribute("class", "row groupRow");
             var nameCol = document.createElement("div");
                 nameCol.setAttribute("class", "col-6")
-                nameCol.setAttribute("style", "border-right: solid grey; display: flex; align-items: center; font-size: 5vh")
+                nameCol.setAttribute("style", "border-right: solid #9CAEA9; display: flex; align-items: center; font-size: 5vh")
                 nameCol.appendChild(document.createTextNode(name));
                 newGroup.appendChild(nameCol);
             var groupCol = document.createElement("div");
                 groupCol.setAttribute("class", "col-6")
                 var inner = ""
-                for (var k = 0; k < groupSize; k++){
+                for (var k = 0; k < members.length; k++){
                     inner += members[k] + "<br> ";
                 }
                 groupCol.innerHTML = inner
@@ -281,8 +312,20 @@
     function rushTime() {
         timeLeft = 1;
     }
-    function getPictures(){
+    function getPictures(destroy = true){
+        console.log("getting pictures");
         countingDown = false;
+        if (destroy) {
+            var par = document.getElementById("grid");
+            while (par.firstChild) {
+                par.removeChild(par.firstChild);
+            }
+            var picRow = document.createElement("div");
+                picRow.setAttribute("id", "pics");
+                picRow.setAttribute("class", "row");
+                par.appendChild(picRow);
+        }
+        
         const packet = {
             timeUp : true
         }
@@ -295,12 +338,12 @@
         if (received.returnedGroup != null) {
             var parent = document.getElementById("pics");
             var newDiv = document.createElement("div");
-            newDiv.setAttribute("class", "col-4");
+            newDiv.setAttribute("class", "col-6");
+            // newDiv.setAttribute("style", "height: 44vh");
             //Image setup
 			var img = document.createElement("canvas");
 			img.setAttribute("width", "1000px");
-			img.setAttribute("height", "1000px");
-            
+			img.setAttribute("height", "1400px");
 			var s = new paper.PaperScope();
 			s.setup(img);
 			s.activate();
@@ -308,17 +351,17 @@
 				project.activeLayer.removeChildren();
 				project.importJSON(received.pic);
 			}
-            img.setAttribute("style", "height: 80%; width: 100%; border-style: solid")
+            img.setAttribute("style", "height: 80%; width: 100%; border-style: solid; background-color: white")
 			newDiv.appendChild(img);
             var adjs = document.createElement("div");
-            adjs.setAttribute("style", "width: 100%; font-size: 2vh; border-style:solid; text-align: center");
+            adjs.setAttribute("style", "width: 100%; font-size: 2vh; border-style:solid; text-align: center; background-color: white");
             adjs.appendChild(document.createTextNode(JSON.parse(received.prompt)))
             newDiv.appendChild(adjs);
             parent.appendChild(newDiv);
         }
     }
 
-    const timeLimit = 300;
+    const timeLimit = 5;
     var timeLeft = timeLimit;
     var countingDown = false;
     function startCountDown() {
@@ -354,11 +397,11 @@
         timeLeft -= 1;
         var timerGraphic = document.getElementById("base-timer-path-remaining");
         if (timeLeft < timeLimit/4) {
-            timerGraphic.setAttribute("style", "color: red");
+            timerGraphic.setAttribute("style", "color: #EF3E36");
         } else if (timeLeft < timeLimit/2) {
-            timerGraphic.setAttribute("style", "color: orange");
+            timerGraphic.setAttribute("style", "color: #20A4F3");
         }
-        
+        console.log(timeLeft)
         document.getElementById("base-timer-label").innerText = formatTime(timeLeft);
         setCircleDashArray();
         if (timeLeft < -5) {
@@ -366,6 +409,24 @@
             getPictures();
         }
     }, 1000);
+
+    var moveTitle = true;
+    var mover = 0;
+    var y = setInterval(function() {
+        if (!moveTitle){
+            return;
+        }
+        var titleCar = document.getElementById("titleCard");
+        mover += 0.005;
+        var rot = 10 * Math.sin(mover);
+        var sca = 1.5 + (0.25 * Math.cos(mover));
+        $("#titleCard").css("transform", "rotate(" + rot + "deg) scale(" + sca + ")"); 
+    }, 5);
+
+    function removeTitle(){
+        document.getElementById("titleCard").remove();
+        document.getElementById("startBtn").remove();
+    }
     
     window.onload = function() {
         document.getElementById("base-timer-label").innerText = formatTime(timeLeft);

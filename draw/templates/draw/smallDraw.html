@@ -20,20 +20,21 @@
 </head>
 <body style="overflow: hidden;">
     <div class = "container-fluid" >
-        <div class= "row" style="height: 5vh; font-size: 4vh;">
-            <div id="adjDisplay" class = "col-12" style="text-align: center;">
-                attribute
+        <div class= "row" style="height: 5vh; font-size: 3vh; background-color: #EF3E36; border-bottom: solid black;">
+            <div id="adjDisplay" class = "col-12" style="text-align: center; color: #FFFD82">
+                Attribute
             </div>
         </div>
         <div class="row" style="height: 81vh;">
             <canvas id="myCanvas" width="750px" height="750px" style="width: 100%;"></canvas>
         </div>
-        <div class="row" style="height: 7vh;">
-            <div class="col-1" style="visibility: hidden;"></div>
+        <div class="row" style="height: 7vh; border-top: solid 5px; border-bottom: solid 5px;">
             <div id="black" class="col-2 colorButton" style="background-color: black; border-width: 5px;" onclick="setColor('black')"></div>
             <div id="white" class="col-2 colorButton" style="background-color: white; border-width: 5px;" onclick="setColor('white')"></div>
             <div id="red" class="col-1 colorButton" style="background-color: red; border-width: 5px;" onclick="setColor('red')"></div>
+            <div id="pink" class="col-1 colorButton" style="background-color: pink; border-width: 5px;" onclick="setColor('pink')"></div>
             <div id="orange" class="col-1 colorButton" style="background-color: orange; border-width: 5px;" onclick="setColor('orange')"></div>
+            <div id="brown" class="col-1 colorButton" style="background-color: brown; border-width: 5px;" onclick="setColor('brown')"></div>
             <div id="yellow" class="col-1 colorButton" style="background-color: yellow; border-width: 5px;" onclick="setColor('yellow')"></div>
             <div id="green" class="col-1 colorButton" style="background-color: green; border-width: 5px;" onclick="setColor('green')"></div>
             <div id="blue" class="col-1 colorButton" style="background-color: blue; border-width: 5px;" onclick="setColor('blue')"></div>
@@ -113,7 +114,8 @@
                 }
                 socket.send(JSON.stringify(packet));
             }
-            location.href = "smallTimeUp";
+            //TODO: uncomment to make things work
+            // location.href = "smallTimeUp";
             return;
         }
         if (received.uid == uid || received.group != params.get("group")){
@@ -154,7 +156,7 @@
     }
 
     window.onload = function(){
-        document.getElementById("adjDisplay").innerHTML = "attribute: <b>" + params.get("adj") + "</b>";
+        document.getElementById("adjDisplay").innerHTML = "Attribute: <b>" + params.get("adj") + "</b>";
         setSize(4, "small");
         setColor("black");
     } 
