@@ -103,6 +103,7 @@
         var received = JSON.parse(receivedMessage.data);
         // console.log(params.get('size'));
         if (received.timeUp != null) {
+            //time is up, go to wait screen
             if (params.get("leader") == "true") {
                 var ex = paper.project.exportJSON();
                 const packet = {
@@ -112,6 +113,7 @@
                 }
                 socket.send(JSON.stringify(packet));
             }
+            location.href = "smallTimeUp";
             return;
         }
         if (received.uid == uid || received.group != params.get("group")){

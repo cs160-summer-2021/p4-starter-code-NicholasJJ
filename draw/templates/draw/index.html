@@ -11,14 +11,27 @@
     <script type="text/javascript" src="{% static 'draw/vendor/paper/paper-full.min.js' %}"></script>
 
     <style type="text/css">
+        .bottomButton{
+            position: absolute;
+            top: 88vh;
+            left: 0vw;
+        }
     </style>
 
 </head>
-<body>
+<body style="overflow-x: hidden; overflow-y: hidden; height: 100%; margin: 0">
     <!-- You may change the dimensions of this canvas -->
-    <div class="container-fluid">
-        <div class="row" style="text-align:center; font-size: 4vh;">
-            Enter your name and a distinguishing feature people can recognize you by!
+    <div class="container-fluid" style="width: 100vw;">
+        <div class="row" style="border-bottom-style: solid; border-width: 1vw;">
+            <div class="col-12" style="text-align: center; font-size: 12vw; font-weight: bolder; font-style: italic;">
+                TASK - O - RAMA
+            </div>
+        </div>
+        <div class="row" style="text-align: center; font-size: 5vh;">
+            <div style="margin: auto;">TASK #0</div>
+        </div>
+        <div class="row" style="text-align: center; font-size: 5vh;">
+            <div style="margin: auto; line-height: 5vh;">Team Member <br> Scavenger Hunt</div>
         </div>
         <div class="row">
             <form style="font-size: 5vh; width: 100%; padding: 3%;">
@@ -30,11 +43,12 @@
                   <label for="exampleDF">Distinguishing Feature</label>
                   <input type="text" class="form-control" id="inputDF" placeholder="tall, bowtie, etc." style="font-size: 5vh;">
                 </div>
-                <div class="btn btn-primary" onclick="sendInfo()" style="width: 100%; font-size: 8vh;">Submit</button>
+                
               </form>
               
         </div>
     </div>
+    <div class="btn btn-primary bottomButton" onclick="sendInfo()" style="width: 100%; font-size: 8vh;">Submit</button>
 </body>
 <script>
     var uid = sessionStorage.getItem("uid");
@@ -56,10 +70,18 @@
     };
 
     function sendInfo(){
-        socket.send("{\"uid\" : " + uid + 
-                    ", \"DF\" : " + "\"" + document.getElementById("inputDF").value + "\"" +
-                    ", \"Name\" : " + "\"" + document.getElementById("inputName").value + "\"" +
-                    "}" );
+        var enteredName = document.getElementById("inputName").value;
+        enteredName = enteredName.charAt(0).toUpperCase() + enteredName.slice(1);
+        const packet = {
+            uid : uid,
+            DF : document.getElementById("inputDF").value,
+            Name : enteredName
+        }
+        socket.send(JSON.stringify(packet));
+        // socket.send("{\"uid\" : " + uid + 
+        //             ", \"DF\" : " + "\"" + document.getElementById("inputDF").value + "\"" +
+        //             ", \"Name\" : " + "\"" + document.getElementById("inputName").value + "\"" +
+        //             "}" );
         console.log("reached href");
         location.href = 'getGroupInfo';
     }

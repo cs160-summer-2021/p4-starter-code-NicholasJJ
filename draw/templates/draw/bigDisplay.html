@@ -121,17 +121,19 @@
                 </div>
             </div>
             <div class="col-8">
-                <div id="grid" class="container-fluid"></div>
+                <div id="grid" class="container-fluid">
+                    <div id = "pics" class="row">
+
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
     <button class="btn btn-primary" onclick="sortGroups()">Sort Groups</button>
-    <button class="btn btn-primary" onclick="getPictures()">Get Pictures</button>
+    <button class="btn btn-primary" onclick="rushTime()">Get Pictures</button>
     <div class="container-fluid">
-        <div id = "pics" class="row">
-
-        </div>
+        
     </div>
 </body>
 <script>
@@ -174,23 +176,23 @@
         const groupToDFs = new Map();
         //Scramble groups
         //TODO: for testing purposes only! comment this out so that humans don't get paired with bots
-        const tempArr = [];
-        for (const [key, value] of idToInfo) {
-            tempArr.push([Math.random(), key, value]);
-        }
-        tempArr.sort();
-        idToInfo.clear();
-        for (var counter = 0; counter < tempArr.length; counter++) {
-            idToInfo.set(tempArr[counter][1],tempArr[counter][2]);
-        }
+        // const tempArr = [];
+        // for (const [key, value] of idToInfo) {
+        //     tempArr.push([Math.random(), key, value]);
+        // }
+        // tempArr.sort();
+        // idToInfo.clear();
+        // for (var counter = 0; counter < tempArr.length; counter++) {
+        //     idToInfo.set(tempArr[counter][1],tempArr[counter][2]);
+        // }
         //End of group scramble
         //group assignment
         for (const [key, value] of idToInfo) {
             var group = Math.floor(i/groupSize);
             if (!groupToDFs.has(group)) {
-                groupToDFs.set(group,[value[1]]);
+                groupToDFs.set(group,[[value[1],key]]);
             } else {
-                groupToDFs.get(group).push(value[1]);
+                groupToDFs.get(group).push([value[1],key]);
             }
             value.push(group)
             i++;
@@ -207,10 +209,14 @@
                 groupToNames[value[2]] = [];
             }
             groupToNames[value[2]].push(value[0]);
+            var myadjNumber = Math.floor(Math.random()*adj.length)
+            var myadj = adj[myadjNumber];
+            adj.splice(myadjNumber,1);
+            console.log(adj);
             infoSocket.send("{\"uid\" : " + key + 
                             ", \"group\" : \"" + g + "\"" +
                             ", \"descriptors\" : " + JSON.stringify(groupToDFs.get(value[2])) +
-                            ", \"adj\" : \" " + adj[Math.floor(Math.random()*adj.length)] + " \"" +
+                            ", \"adj\" : \" " + myadj + " \"" +
                             "}" );
         }
         nameToGroup.sort();
@@ -259,7 +265,7 @@
             newGroup.setAttribute("class", "row groupRow");
             var nameCol = document.createElement("div");
                 nameCol.setAttribute("class", "col-6")
-                nameCol.setAttribute("style", "border-right: solid grey; display: flex; align-items: center")
+                nameCol.setAttribute("style", "border-right: solid grey; display: flex; align-items: center; font-size: 5vh")
                 nameCol.appendChild(document.createTextNode(name));
                 newGroup.appendChild(nameCol);
             var groupCol = document.createElement("div");
@@ -272,8 +278,11 @@
                 newGroup.appendChild(groupCol); 
             parent.appendChild(newGroup);
     }
-
+    function rushTime() {
+        timeLeft = 1;
+    }
     function getPictures(){
+        countingDown = false;
         const packet = {
             timeUp : true
         }
@@ -352,6 +361,10 @@
         
         document.getElementById("base-timer-label").innerText = formatTime(timeLeft);
         setCircleDashArray();
+        if (timeLeft < -5) {
+            countingDown = false;
+            getPictures();
+        }
     }, 1000);
     
     window.onload = function() {

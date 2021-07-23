@@ -11,36 +11,51 @@
     <script type="text/javascript" src="{% static 'draw/vendor/paper/paper-full.min.js' %}"></script>
 
     <style type="text/css">
+        .bottomButton{
+            position: absolute;
+            top: 87vh;
+            left: 0vw;
+        }
     </style>
 
 </head>
 <body>
     <!-- You may change the dimensions of this canvas -->
-    <div class="container-fluid" style="font-size: 3vh; margin: 1vh; width: 95%">
-        <div class= "row" style="text-align: center;"> <div class="col-12">Draw something that has attribute:</div></div>
-        <div class= "row" style="text-align: center; font-weight:bold; font-size: 5vh;"> <div id="adj" class="col-12">???</div></div>
-        <div class= "row" style="text-align: center;"><div class="col-12">With Group:</div></div>
-        <div class= "row" style="text-align: center; font-weight:bold; font-size: 5vh;"><div id="groupName" class="col-12">???</div></div>
-        <div class="row">
-              Some identifying features about you and your teammates:
-        </div>
-        <div id="groupDescriptors" class="row">
-              
-        </div>
-        <div class = "row">
-            <div class="col-12">
-                <button id="readyButton" class=btn btn-primary onclick="readyUp()" style="width: 100%; font-size: 8vh; color: grey;">Get Drawing!</button>
-            </div>
-        </div>
-        <div id="progressBar" class = "row" style="visibility: hidden; font-size: 5vh;">
-            <div class="col-6">
-                Ready:
-            </div>
-            <div id="progressNumbers" class="col-6">
-                0/4
+    <div class="container-fluid">
+        <div class="row" style="border-style: solid; border-width: 1vw; border-radius: 10px;">
+            <div class="col-12" style="text-align: center; font-size: 12vw; font-weight: bolder; font-style: italic;">
+                TASK - O - RAMA
             </div>
         </div>
     </div>
+    <div class="container-fluid" style="font-size: 3vh; margin: 1vh; width: 95%">
+        <div style="border: solid">
+            
+            <div class= "row" style="text-align: center;"><div class="col-12">Team Name</div></div>
+            <div class= "row" style="text-align: center; font-weight:bold; font-size: 5vh;"><div id="groupName" style="line-height: 6vh;" class="col-12">???</div></div>
+            <div id="groupDescriptors" class="row">
+              
+            </div>
+            <div id="progressBar" class = "row" style="visibility: hidden; font-size: 5vh;">
+                <div class="col-6">
+                    Ready:
+                </div>
+                <div id="progressNumbers" class="col-6">
+                    0/4
+                </div>
+            </div>
+        </div>
+        <div class= "row" style="text-align: center;"> <div class="col-12">Draw something that has attribute:</div></div>
+        <div class= "row" style="text-align: center; font-weight:bold; font-size: 5vh;"> <div id="adj" class="col-12">???</div></div>
+        
+        <div class = "row">
+            <div class="col-12">
+                
+            </div>
+        </div>
+        
+    </div>
+    <button id="readyButton" class="btn bottomButton" btn-primary onclick="readyUp()" style="width: 100%; font-size: 8vh; color: grey;">Get Drawing!</button>
 </body>
 <script>
     var uid = sessionStorage.getItem("uid");
@@ -70,11 +85,13 @@
         var received = JSON.parse(receivedMessage.data);
         if (received.group != null && received.uid == uid) {
             document.getElementById("groupName").textContent = received.group;
+            var fs = Math.min(5, 90/received.group.length);
+            document.getElementById("groupName").setAttribute("style", "line-height: 6vh; font-size: " + fs + "vh")
             document.getElementById("adj").textContent = received.adj;
             var dList = []
             dList = received.descriptors;
             for (var i = 0; i < dList.length; i++) {
-                createDFBlock(dList[i]);
+                createDFBlock(dList[i][0],dList[i][1] == uid);
             }
             sessionStorage.setItem("group", received.group);
             myGroup = received.group;
@@ -101,8 +118,13 @@
         var parent = document.getElementById("groupDescriptors");
         var newDiv = document.createElement("div");
         newDiv.setAttribute("class", "col-12");
-        newDiv.setAttribute("style", "font-size: 3vh");
-        newDiv.appendChild(document.createTextNode(text))
+        newDiv.setAttribute("style", "font-size: 5vh");
+        if (me) {
+            newDiv.appendChild(document.createTextNode(text + "<-- Me!"))
+        } else {
+            newDiv.appendChild(document.createTextNode(text))
+        }
+        
         parent.appendChild(newDiv);
     }
 

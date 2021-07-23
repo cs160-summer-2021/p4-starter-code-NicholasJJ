@@ -10,4 +10,6 @@ urlpatterns = [
     path('smallDraw', views.smallDraw, name='smallDraw'),
     path('getGroupInfo', views.getGroupInfo, name='getGroupInfo'),
     path('wsp', views.wsp, name='wsp'),
+    path('bigGallery', views.bigGallery, name='bigGallery'),
+    path('smallTimeUp', views.smallTimeUp, name='smallTimeUp'),
 ]

@@ -20,3 +20,9 @@ def getGroupInfo(request):
 
 def wsp(request):
     return render(request, 'draw/1c.html')
+
+def bigGallery(request):
+    return render(request, 'draw/bigGallery.html')
+
+def smallTimeUp(request):
+    return render(request, 'draw/smallTimeUp.html')
