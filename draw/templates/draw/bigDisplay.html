@@ -11,6 +11,9 @@
     <script type="text/javascript" src="{% static 'draw/vendor/paper/paper-full.min.js' %}"></script>
 
     <style type="text/css">
+        body{
+            font-family: 'Raleway', sans-serif;
+        }
         #grid{
             font-size: 5vh;
         }
@@ -47,6 +50,7 @@
             
             /* Keep the label aligned to the top */
             top: -31vw;
+            font-family:spaceRave;
             
             /* Create a flexible box that centers content vertically and horizontally */
             display: flex;
@@ -91,6 +95,7 @@
             color: #FFFD82;
             border: solid black 5px;
             transform: rotate(30deg) scale(2);
+            font-family:spaceRave;
         }
         #startBtn{
             position: relative;
@@ -125,6 +130,13 @@
             overflow-x: auto;
             white-space: nowrap;
         }
+        @font-face {
+            font-family: 'spaceRave';
+            src: url('../../static/draw/Space\ Rave\ Italic.ttf');
+        }
+    </style>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap');
     </style>
 
 </head>
@@ -208,6 +220,15 @@
     idToInfo.set(7, ["Gus", "Good"]);
     idToInfo.set(8, ["Heather", "Handsome"]);
 
+    idToInfo.set(9, ["Will", "Wise"]);
+    idToInfo.set(10, ["Zane", "Zany"]);
+    idToInfo.set(11, ["Trevor", "Trustworthy"]);
+    idToInfo.set(12, ["Eugene", "Nice"]);
+    idToInfo.set(13, ["Susan", "Silly"]);
+    idToInfo.set(14, ["Rick", "Rolling"]);
+    idToInfo.set(15, ["Kevin", "Baking"]);
+    idToInfo.set(16, ["Hope", "Heroic"]);
+
     var infoSocket = new WebSocket('ws://' + window.location.host + '/ws/info');
     var drawSocket = new WebSocket('ws://' + window.location.host + '/ws/draw');
 
@@ -274,17 +295,19 @@
         console.log(groupToNames);
         //Code for display goes here
         // sort by name
-        // makeRow("Name","Group", "nameGroupRowHeader");
-        // for (var j = 0; j < nameToGroup.length; j++) {
-        //     makeRow(nameToGroup[j][0],nameToGroup[j][1], "nameGroupRow");
-        // }
-        // sort by group
-        makeRow("Group","Members", "nameGroupRowHeader");
-        for (var j = 0; j < groupToNames.length; j++) {
-            makeGroup(j,groupToNames[j]);
+        makeRow("Name","Group", "nameGroupRowHeader");
+        for (var j = 0; j < nameToGroup.length; j++) {
+            makeRow(nameToGroup[j][0],nameToGroup[j][1], "nameGroupRow");
         }
+        var fontSize = Math.min(5, 57/nameToGroup.length)
 
-        var fontSize = Math.min(5, 60/nameToGroup.length)
+        // sort by group
+        // makeRow("Group","Members", "nameGroupRowHeader");
+        // for (var j = 0; j < groupToNames.length; j++) {
+        //     makeGroup(j,groupToNames[j]);
+        // }
+        // var fontSize = Math.min(5, 60/nameToGroup.length)
+
         document.getElementById("grid").setAttribute("style", "font-size: " + fontSize + "vh")
         startCountDown();
     }
@@ -381,7 +404,7 @@
         }
     }
 
-    const timeLimit = 2;
+    const timeLimit = 30;
     var timeLeft = timeLimit;
     var countingDown = false;
     function startCountDown() {
