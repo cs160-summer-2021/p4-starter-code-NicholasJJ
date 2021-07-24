@@ -180,7 +180,7 @@
                     <br><br>
                     3: Draw! When time is up, pictures will be collected automatically
                 </div>
-                <button class="btn btn-primary" onclick="getPictures(false)">Get Pictures</button>
+                <!-- <button class="btn btn-primary" onclick="getPictures(false)">Get Pictures</button> -->
             </div>
             <div class="col-8">
                 <div id="grid" class="container-fluid">
@@ -227,7 +227,7 @@
     idToInfo.set(13, ["Susan", "Silly"]);
     idToInfo.set(14, ["Rick", "Rolling"]);
     idToInfo.set(15, ["Kevin", "Baking"]);
-    idToInfo.set(16, ["Hope", "Heroic"]);
+    // idToInfo.set(16, ["Hope", "Heroic"]);
 
     var infoSocket = new WebSocket('ws://' + window.location.host + '/ws/info');
     var drawSocket = new WebSocket('ws://' + window.location.host + '/ws/draw');
@@ -244,15 +244,15 @@
         const groupToDFs = new Map();
         //Scramble groups
         //TODO: for testing purposes only! comment this out so that humans don't get paired with bots
-        // const tempArr = [];
-        // for (const [key, value] of idToInfo) {
-        //     tempArr.push([Math.random(), key, value]);
-        // }
-        // tempArr.sort();
-        // idToInfo.clear();
-        // for (var counter = 0; counter < tempArr.length; counter++) {
-        //     idToInfo.set(tempArr[counter][1],tempArr[counter][2]);
-        // }
+        const tempArr = [];
+        for (const [key, value] of idToInfo) {
+            tempArr.push([Math.random(), key, value]);
+        }
+        tempArr.sort();
+        idToInfo.clear();
+        for (var counter = 0; counter < tempArr.length; counter++) {
+            idToInfo.set(tempArr[counter][1],tempArr[counter][2]);
+        }
         //End of group scramble
         //group assignment
         for (const [key, value] of idToInfo) {
@@ -294,6 +294,9 @@
         console.log(nameToGroup);
         console.log(groupToNames);
         //Code for display goes here
+
+
+
         // sort by name
         makeRow("Name","Group", "nameGroupRowHeader");
         for (var j = 0; j < nameToGroup.length; j++) {
@@ -301,12 +304,16 @@
         }
         var fontSize = Math.min(5, 57/nameToGroup.length)
 
+
+
         // sort by group
         // makeRow("Group","Members", "nameGroupRowHeader");
         // for (var j = 0; j < groupToNames.length; j++) {
         //     makeGroup(j,groupToNames[j]);
         // }
         // var fontSize = Math.min(5, 60/nameToGroup.length)
+
+
 
         document.getElementById("grid").setAttribute("style", "font-size: " + fontSize + "vh")
         startCountDown();
@@ -404,7 +411,7 @@
         }
     }
 
-    const timeLimit = 30;
+    const timeLimit = 300;
     var timeLeft = timeLimit;
     var countingDown = false;
     function startCountDown() {
